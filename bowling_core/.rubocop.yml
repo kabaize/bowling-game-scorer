@@ -1,0 +1,15 @@
+AllCops:
+  NewCops: enable
+
+Layout/IndentationStyle:
+  Enabled: true
+
+Layout/IndentationWidth:
+  Width: 2
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
+Metrics/MethodLength:
+  Enabled: false

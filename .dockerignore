@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+*.pem
+*.key
+*.crt
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

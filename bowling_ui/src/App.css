@@ -1,0 +1,236 @@
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.4;
+
+  /* Dark theme */
+  --bg: #242424;
+  --panel: #171a21;
+  --panel-2: #1d2230;
+
+  --text: rgba(255, 255, 255, 0.9);
+  --muted: rgba(255, 255, 255, 0.72);
+
+  --border: rgba(255, 255, 255, 0.12);
+
+  --input-bg: #111318;
+  --input-border: rgba(255, 255, 255, 0.18);
+
+  --button-bg: #23283b;
+  --button-border: rgba(255, 255, 255, 0.18);
+  --button-text: rgba(255, 255, 255, 0.92);
+
+  --button-primary-bg: #ffffff;
+  --button-primary-text: #111;
+  --button-primary-border: #ffffff;
+
+  --code-bg: #0f1115;
+
+  --error-bg: rgba(255, 80, 80, 0.12);
+  --error-border: rgba(255, 80, 80, 0.4);
+
+  --ok-bg: rgba(70, 200, 120, 0.12);
+  --ok-border: rgba(70, 200, 120, 0.4);
+
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.pageContents {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 18px;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 18px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+  opacity: 1;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.label {
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+  color: var(--text);
+}
+
+.textarea {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+}
+
+.textarea:focus {
+  border-color: var(--button-primary-border);
+}
+
+.button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: 1px solid var(--button-border);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-color: var(--button-primary-border);
+}
+
+.bannerError {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--text);
+}
+
+.bannerOk {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-border);
+  color: var(--text);
+}
+
+.codeBlock {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 13px;
+
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+}
+
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.total {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.frameCard {
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.frameLabel {
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 1;
+}
+
+.frameScore {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+.frameIncomplete {
+  background: #fcfcfc;
+  border-style: dashed;
+  opacity: 0.8;
+  color: red;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+code {
+  color: var(--text);
+}
+
+body {
+  margin: 0;
+}
+
+.codeTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}

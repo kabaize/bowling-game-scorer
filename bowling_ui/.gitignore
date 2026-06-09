@@ -1,0 +1,54 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment / secrets
+*.pem
+*.key
+*.crt
+
+# Node / React / Vite
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+coverage/
+*.local
+
+# Ruby / Rails
+.bundle/
+vendor/bundle/
+
+bowling_api/.bundle/
+bowling_api/vendor/bundle/
+bowling_api/log/*
+!bowling_api/log/.keep
+bowling_api/tmp/*
+!bowling_api/tmp/.keep
+bowling_api/storage/*
+!bowling_api/storage/.keep
+bowling_api/config/master.key
+bowling_api/db/*.sqlite3
+bowling_api/db/*.sqlite3-*
+
+bowling_core/.bundle/
+bowling_core/vendor/bundle/
+bowling_core/pkg/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
