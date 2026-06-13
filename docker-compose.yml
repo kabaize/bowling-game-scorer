@@ -1,8 +1,6 @@
 services:
   bowling_api:
-    build:
-      context: .
-      dockerfile: bowling_api/Dockerfile
+    image: ghcr.io/kabaize/bowling-game-scorer-api
     container_name: bowling_api
     networks:
       - proxy
@@ -11,13 +9,10 @@ services:
     restart: unless-stopped
 
   bowling_ui:
-    build:
-      context: ./bowling_ui
+    image: ghcr.io/kabaize/bowling-game-scorer-ui
     container_name: bowling_ui
     networks:
       - proxy
-    #ports:
-      #- "8085:80"
     depends_on:
       - bowling_api
     restart: unless-stopped
