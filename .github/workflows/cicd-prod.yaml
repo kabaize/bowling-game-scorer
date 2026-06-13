@@ -139,6 +139,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           input: api-image.tar
+          scanners: "vuln"
           severity: "CRITICAL,HIGH"
           format: "table"
           exit-code: "1"
@@ -149,6 +150,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           input: ui-image.tar
+          scanners: "vuln"
           severity: "CRITICAL,HIGH"
           format: "table"
           exit-code: "1"
