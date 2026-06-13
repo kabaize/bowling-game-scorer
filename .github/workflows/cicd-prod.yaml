@@ -101,11 +101,59 @@ jobs:
           tags: ${{ env.UI_IMAGE }}:ci
           load: true
 
-  # security-scan:
-  #   runs-on: ubuntu-latest
-  #   needs: build-docker
+      - name: Save Docker images
+        run: |
+          docker save ${{ env.API_IMAGE }}:ci -o api-image.tar
+          docker save ${{ env.UI_IMAGE }}:ci -o ui-image.tar
 
-  #   steps:
+      - name: Upload API image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-image
+          path: api-image.tar
+          retention-days: 1
+
+      - name: Upload UI image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-image
+          path: ui-image.tar
+          retention-days: 1
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-docker
+
+    steps:
+      - name: Download API image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: api-image
+
+      - name: Download UI image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ui-image
+
+      - name: Scan API image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          input: api-image.tar
+          severity: "CRITICAL,HIGH"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+
+      - name: Scan UI image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          input: ui-image.tar
+          severity: "CRITICAL,HIGH"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
 
   # publish:
   #   runs-on: ubuntu-latest
