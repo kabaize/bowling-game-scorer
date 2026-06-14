@@ -1,22 +1,21 @@
 services:
   bowling_api:
-    image: ghcr.io/kabaize/bowling-game-scorer-api
+    image: ghcr.io/kabaize/bowling-game-scorer-api:latest
     container_name: bowling_api
     networks:
-      - proxy
-    expose:
-      - "3000"
+      - bowling-game-scorer-net
     restart: unless-stopped
 
   bowling_ui:
-    image: ghcr.io/kabaize/bowling-game-scorer-ui
+    image: ghcr.io/kabaize/bowling-game-scorer-ui:latest
     container_name: bowling_ui
     networks:
-      - proxy
+      - bowling-game-scorer-net
+    ports:
+      - "8085:80"
     depends_on:
       - bowling_api
     restart: unless-stopped
 
 networks:
-  proxy:
-    external: true
+  bowling-game-scorer-net:

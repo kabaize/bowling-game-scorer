@@ -88,7 +88,7 @@ This means Trivy scans both:
 
 During remediation, an unused `thruster` dependency was removed from the Rails API image. This reduced the runtime image attack surface and eliminated an unnecessary embedded Go binary from the scan results.
 
-The Rails API image currently pins patched versions of vulnerable `json` and `net-imap` dependencies in `Gemfile` and `Gemfile.lock`. Trivy may still report stale/default Ruby gem metadata inherited from the upstream Ruby base image. For this exercise, Trivy is retained as a reporting control rather than a blocking deployment gate so the full CI/CD pipeline can complete. In a production setting, I would make the scan a blocking deployment gate after moving to a patched base image or otherwise eliminating inherited image findings.
+The Rails API image currently pins patched versions of `json` and `net-imap` in `Gemfile` and `Gemfile.lock` after Trivy identified older Ruby-provided versions in the container image. Trivy may still report stale/default Ruby gem metadata inherited from the upstream Ruby base image. For this exercise, Trivy is retained as a reporting control rather than a blocking deployment gate so the full CI/CD pipeline can complete. In a professional production setting, I would route high- and critical-severity findings into a vulnerability tracking process with defined ownership, remediation timelines, and escalation criteria. For example, findings could be tracked against the application-owning team with a defined remediation window, while deployment blocking could be reserved for actively exploited, internet-exposed, or policy-exception cases.
 
 The workflow also uses GitHub Actions token permissions with least privilege:
 
@@ -97,41 +97,15 @@ The workflow also uses GitHub Actions token permissions with least privilege:
 
 ## Running the Application from Published Images
 
-After the images are published, the application can be run locally with Docker.
+After the images are published, the application can be run locally with Docker Compose. The relevant Compose file is named `docker-compose.yml`.
 
-Create a Docker network:
+From the repository root:
 
-```powershell
-docker network create bowling-game-scorer-net
+```bash
+docker compose up -d
 ```
 
-Pull the published images:
-
-```powershell
-docker pull ghcr.io/kabaize/bowling-game-scorer-api:latest
-docker pull ghcr.io/kabaize/bowling-game-scorer-ui:latest
-```
-
-Run the API container:
-
-```powershell
-docker run -d `
-  --name bowling-game-scorer-api `
-  --network bowling-game-scorer-net `
-  --network-alias bowling_api `
-  -p 3000:3000 `
-  ghcr.io/kabaize/bowling-game-scorer-api:latest
-```
-
-Run the UI container:
-
-```powershell
-docker run -d `
-  --name bowling-game-scorer-ui `
-  --network bowling-game-scorer-net `
-  -p 8085:80 `
-  ghcr.io/kabaize/bowling-game-scorer-ui:latest
-```
+Docker Compose will create the application network, pull the published images if they are not already present locally, and start both containers.
 
 Open the application:
 
@@ -139,19 +113,19 @@ Open the application:
 http://localhost:8085
 ```
 
-The API container uses the network alias `bowling_api` because the UI container’s Nginx configuration proxies API requests to that hostname.
+The root `docker-compose.yml` exposes only the UI container to the host on port `8085`. The API container is not published directly to the host; it is reachable by the UI container over the Docker Compose network using the `bowling_api` service name.
 
-To clean up local test containers:
+To stop and remove the containers and network created by Docker Compose:
 
-```powershell
-docker rm -f bowling-game-scorer-api bowling-game-scorer-ui
-docker network rm bowling-game-scorer-net
+```bash
+docker compose down
 ```
 
-Optionally remove the pulled images:
+To explicitly refresh the published images before restarting the application:
 
-```powershell
-docker rmi ghcr.io/kabaize/bowling-game-scorer-api:latest ghcr.io/kabaize/bowling-game-scorer-ui:latest
+```bash
+docker compose pull
+docker compose up -d
 ```
 
 ## Running the Application for Local Development
@@ -206,43 +180,42 @@ The GitHub Actions backend job runs these same RSpec tests. If the tests fail, t
 
 From the repository root:
 
-```powershell
-docker build `
-  -t bowling-game-scorer-api:local `
-  -f .\bowling_api\Dockerfile `
+```bash
+docker build \
+  -t bowling-game-scorer-api:local \
+  -f ./bowling_api/Dockerfile \
   .
 ```
 
-```powershell
-docker build `
-  -t bowling-game-scorer-ui:local `
-  .\bowling_ui
+```bash
+docker build \
+  -t bowling-game-scorer-ui:local \
+  ./bowling_ui
 ```
 
 Create a local test network:
 
-```powershell
+```bash
 docker network create bowling-game-scorer-net
 ```
 
 Run the local API image:
 
-```powershell
-docker run -d `
-  --name bowling-game-scorer-api `
-  --network bowling-game-scorer-net `
-  --network-alias bowling_api `
-  -p 3000:3000 `
+```bash
+docker run -d \
+  --name bowling-game-scorer-api \
+  --network bowling-game-scorer-net \
+  --network-alias bowling_api \
   bowling-game-scorer-api:local
 ```
 
 Run the local UI image:
 
-```powershell
-docker run -d `
-  --name bowling-game-scorer-ui `
-  --network bowling-game-scorer-net `
-  -p 8085:80 `
+```bash
+docker run -d \
+  --name bowling-game-scorer-ui \
+  --network bowling-game-scorer-net \
+  -p 8085:80 \
   bowling-game-scorer-ui:local
 ```
 
@@ -252,9 +225,9 @@ Open:
 http://localhost:8085
 ```
 
-Clean up:
+To clean up the local Docker test containers, network, and images:
 
-```powershell
+```bash
 docker rm -f bowling-game-scorer-api bowling-game-scorer-ui
 docker network rm bowling-game-scorer-net
 docker rmi bowling-game-scorer-api:local bowling-game-scorer-ui:local
