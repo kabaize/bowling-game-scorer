@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "bundler"
+    directory: "/bowling_api"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "npm"
+    directory: "/bowling_ui"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "docker"
+    directory: "/bowling_api"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "docker"
+    directory: "/bowling_ui"
+    schedule:
+      interval: "monthly"
