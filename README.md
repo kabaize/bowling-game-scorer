@@ -45,10 +45,11 @@ The workflow includes the following jobs:
    - Saves both images as tar artifacts for later workflow jobs.
 
 4. **Security scan**
-   - Downloads the built image artifacts.
-   - Scans both Docker images with Trivy.
+   - Downloads the built Docker image artifacts.
+   - Scans both images with Trivy.
    - Scans OS and application/library dependencies.
-   - Reports `HIGH` and `CRITICAL` findings.
+   - Generates SARIF results for `HIGH` and `CRITICAL` findings.
+   - Uploads the SARIF results to GitHub Code scanning so findings are visible in the repository Security tab.
 
 5. **Publish**
    - Runs only for pushes to `main` or manual runs from `main`.
@@ -73,7 +74,7 @@ This provides both a convenient latest image and a traceable immutable image ref
 
 ## Security Notes
 
-This pipeline includes container image scanning with Trivy.
+This pipeline includes container image scanning with Trivy. Scan results are generated as SARIF output, which are then uploaded to `Code scanning` within the `Security and quality` tab of the GitHub repository.
 
 The Trivy scan is configured to report `HIGH` and `CRITICAL` vulnerabilities in:
 
@@ -93,6 +94,7 @@ The Rails API image currently pins patched versions of `json` and `net-imap` in 
 The workflow also uses GitHub Actions token permissions with least privilege:
 
 - The workflow defaults to `contents: read`.
+- The `security-scan` job receives `security-events: write` so it can upload SARIF results to GitHub Code scanning.
 - The `publish` job alone receives `packages: write` so it can publish images to GitHub Container Registry.
 
 ## Running the Application from Published Images
@@ -237,6 +239,6 @@ docker rmi bowling-game-scorer-api:local bowling-game-scorer-ui:local
 
 If this project were extended further, I would focus on:
 
-- **Repository and pipeline enforcement** – Add branch protection rules, require successful CI checks before merging, and make Trivy a blocking deployment gate after targeted-severity vulnerabilities are remediated.
+- **Repository and pipeline enforcement** – Add branch protection rules, require successful CI checks before merging, and integrate Trivy findings with a vulnerability tracking process that supports ownership, remediation timelines, escalation, and risk-based deployment gates.
 - **Supply-chain and secrets hardening** – Pin base images by digest, automate dependency updates, and add a more formal secrets management pattern for deployment credentials and runtime configuration.
 - **Operational readiness** – Add observability, deployment runbooks, expanded test coverage, and a production Docker Compose deployment target with documented rollback steps.
