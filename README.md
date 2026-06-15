@@ -74,7 +74,7 @@ This provides both a convenient latest image and a traceable immutable image ref
 
 ## Security Notes
 
-This pipeline includes container image scanning with Trivy. Scan results are generated as SARIF output, which are then uploaded to `Code scanning` within the `Security and quality` tab of the GitHub repository.
+This project uses two complementary security feedback paths: Trivy scans the built container images and uploads SARIF results to GitHub Code scanning, while Dependabot monitors source-level dependencies and opens update pull requests when configured updates or security fixes are available.
 
 The Trivy scan is configured to report `HIGH` and `CRITICAL` vulnerabilities in:
 
@@ -96,6 +96,25 @@ The workflow also uses GitHub Actions token permissions with least privilege:
 - The workflow defaults to `contents: read`.
 - The `security-scan` job receives `security-events: write` so it can upload SARIF results to GitHub Code scanning.
 - The `publish` job alone receives `packages: write` so it can publish images to GitHub Container Registry.
+
+## Dependency and Supply Chain Monitoring
+
+This repository also uses GitHub's dependency graph and Dependabot to improve supply chain visibility.
+
+Dependabot is configured to monitor and update dependencies across:
+
+- Ruby dependencies in `bowling_api`
+- Node dependencies in `bowling_ui`
+- GitHub Actions workflow dependencies
+- Docker base images for the API and UI images
+
+Routine version update checks are configured in:
+
+```text
+.github/dependabot.yml
+```
+
+Dependabot version updates are scheduled monthly to reduce unnecessary pull request noise while still maintaining dependency visibility. Dependabot alerts and security updates are also enabled so vulnerable dependencies can be identified and remediated through pull requests when fixes are available.
 
 ## Running the Application from Published Images
 
@@ -239,6 +258,7 @@ docker rmi bowling-game-scorer-api:local bowling-game-scorer-ui:local
 
 If this project were extended further, I would focus on:
 
-- **Repository and pipeline enforcement** – Add branch protection rules, require successful CI checks before merging, and integrate Trivy findings with a vulnerability tracking process that supports ownership, remediation timelines, escalation, and risk-based deployment gates.
-- **Supply-chain and secrets hardening** – Pin base images by digest, automate dependency updates, and add a more formal secrets management pattern for deployment credentials and runtime configuration.
-- **Operational readiness** – Add observability, deployment runbooks, expanded test coverage, and a production Docker Compose deployment target with documented rollback steps.
+- **Vulnerability management** – Integrate Trivy findings with a vulnerability tracking process that supports ownership, remediation timelines, escalation, and risk-based deployment gates.
+- **Branch protection through CI enforcement** – Require successful continuous integration checks before pull requests can be merged. This ensures that builds, tests, and security checks pass before code is promoted.
+- **Active security controls** – Migrate to a more feature-rich reverse proxy that supports intrusion prevention systems. This would build on my existing intrusion detection setup by adding remediation and enforcement capabilities.
+- **Branching model** – If this product were being released in a corporate environment with distributed systems, user data, and multiple deployment stages, adopt a GitFlow-style branching model with separate `main`, `develop`, feature, and release branches. This would support controlled feature integration, release stabilization, and clearer traceability between tested release candidates and production deployments.
