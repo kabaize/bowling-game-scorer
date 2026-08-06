@@ -15,13 +15,13 @@ The project contains three main components:
 The main workflow is located at:
 
 ```text
-.github/workflows/cicd-prod.yaml
+.github/workflows/cicd.yml
 ```
 
 The workflow runs on:
 
-- Pushes to `main`
-- Pull requests targeting `main`
+- Pushes to `main` or `develop`
+- Pull requests targeting `main` or `develop`
 - Manual runs through `workflow_dispatch`
 
 The workflow includes the following jobs:
@@ -89,7 +89,7 @@ This means Trivy scans both:
 
 During remediation, an unused `thruster` dependency was removed from the Rails API image. This reduced the runtime image attack surface and eliminated an unnecessary embedded Go binary from the scan results.
 
-The Rails API image currently pins patched versions of `json` and `net-imap` in `Gemfile` and `Gemfile.lock` after Trivy identified older Ruby-provided versions in the container image. Trivy may still report stale/default Ruby gem metadata inherited from the upstream Ruby base image. For this exercise, Trivy is retained as a reporting control rather than a blocking deployment gate so the full CI/CD pipeline can complete. In a professional production setting, I would route high- and critical-severity findings into a vulnerability tracking process with defined ownership, remediation timelines, and escalation criteria. For example, findings could be tracked against the application-owning team with a defined remediation window, while deployment blocking could be reserved for actively exploited, internet-exposed, or policy-exception cases.
+The Rails API image currently pins patched versions of `json` and `net-imap` in `Gemfile` and `Gemfile.lock` after Trivy identified older Ruby-provided versions in the container image. Trivy may still report stale/default Ruby gem metadata inherited from the upstream Ruby base image. Trivy findings are always uploaded to the Security tab, but whether they block the pipeline depends on the branch: on `develop`, Trivy is a reporting control only, so feature work can be validated without a scan finding halting the run; on `main`, a `HIGH` or `CRITICAL` finding fails the `security-scan` job and blocks `publish`, since `main` is the only branch that pushes images to GitHub Container Registry. In a professional production setting, I would also route findings into a vulnerability tracking process with defined ownership, remediation timelines, and escalation criteria. For example, findings could be tracked against the application-owning team with a defined remediation window, while deployment blocking could be reserved for actively exploited, internet-exposed, or policy-exception cases.
 
 The workflow also uses GitHub Actions token permissions with least privilege:
 
@@ -103,7 +103,7 @@ This repository also uses GitHub's dependency graph and Dependabot to improve su
 
 Dependabot is configured to monitor and update dependencies across:
 
-- Ruby dependencies in `bowling_api`
+- Ruby dependencies in `bowling_api` and `bowling_core`
 - Node dependencies in `bowling_ui`
 - GitHub Actions workflow dependencies
 - Docker base images for the API and UI images
@@ -261,5 +261,5 @@ If this project were extended further, I would focus on:
 - **Vulnerability management** – Integrate Trivy findings with a vulnerability tracking process that supports ownership, remediation timelines, escalation, and risk-based deployment gates.
 - **Branch protection through CI enforcement** – Require successful continuous integration checks before pull requests can be merged. This ensures that builds, tests, and security checks pass before code is promoted.
 - **Active security controls** – Migrate to a more feature-rich reverse proxy that supports intrusion prevention systems. This would build on my existing intrusion detection setup by adding remediation and enforcement capabilities.
-- **Branching model** – If this product were being released in a corporate environment with distributed systems, user data, and multiple deployment stages, adopt a GitFlow-style branching model with separate `main`, `develop`, feature, and release branches. This would support controlled feature integration, release stabilization, and clearer traceability between tested release candidates and production deployments.
+- **Branching model** – A `main`/`develop`/feature branching model is now in place, with CI/CD (including Trivy scanning) running on both `main` and `develop`. If this product were being released in a corporate environment with distributed systems, user data, and multiple deployment stages, I would extend this further with dedicated release branches for release stabilization and clearer traceability between tested release candidates and production deployments.
 - **User Experience** - Input field shouldn't require space/comma input from the user as a separator of bowling roll values. A user should be able to enter each roll value, and then the application should automatically insert a comma IF the user begins to enter an additional roll value (ie User types 'X', then '7'. The application automatically inserts a comma between the two values).

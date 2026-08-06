@@ -6,6 +6,12 @@ updates:
     schedule:
       interval: "monthly"
 
+  - package-ecosystem: "bundler"
+    directory: "/bowling_core"
+    target-branch: "develop"
+    schedule:
+      interval: "monthly"
+
   - package-ecosystem: "npm"
     directory: "/bowling_ui"
     target-branch: "develop"
