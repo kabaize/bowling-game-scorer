@@ -11,6 +11,12 @@ RUN apt-get update -qq && apt-get install -y \
   nodejs \
   && rm -rf /var/lib/apt/lists/*
 
+# Remove Ruby's own bundled default json gemspec: it's stale metadata that
+# Trivy flags as vulnerable, but the app always loads Bundler's patched
+# json gem instead (pinned in Gemfile). Only the specification file is
+# removed, not any code path actually used at runtime.
+RUN rm -f /usr/local/lib/ruby/gems/4.0.0/specifications/default/json-*.gemspec
+
 # App root in the image
 WORKDIR /app
 
