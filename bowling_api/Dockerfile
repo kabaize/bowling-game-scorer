@@ -43,7 +43,13 @@ RUN bundle install
 # this is a single-stage build, this doesn't shrink the image itself
 # (the bytes still exist in the earlier install layer) -- it only
 # removes the packages from the final dpkg state that Trivy scans.
-RUN apt-get purge -y build-essential linux-libc-dev \
+#
+# imagemagick (and its libheif backend) ships preinstalled in the
+# ruby:4.0 base image, not something this Dockerfile asks for. Nothing
+# in the app uses it: no has_one_attached/has_many_attached, no
+# ActiveStorage migrations, no MiniMagick/ImageProcessing call anywhere
+# -- the image_processing gem in the Gemfile is unused Rails boilerplate.
+RUN apt-get purge -y build-essential linux-libc-dev imagemagick \
   && apt-get autoremove -y \
   && apt-get clean
 
