@@ -132,9 +132,10 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    # TEMPORARY: unconditional exit code while we isolate what's
-    # actually failing. Re-add the branch-conditional exit code once
-    # this passes clean.
+    env:
+      # Block the pipeline on HIGH/CRITICAL findings only for main (the only branch that publishes to GHCR).
+      # Other branches (e.g. develop) still report findings to the Security tab but don't fail the run.
+      TRIVY_EXIT_CODE: ${{ (github.ref == 'refs/heads/main' || github.base_ref == 'main') && '1' || '0' }}
 
     steps:
       - name: Download API image artifact
@@ -161,7 +162,7 @@ jobs:
           severity: "CRITICAL,HIGH"
           format: "sarif"
           output: "trivy-api-results.sarif"
-          exit-code: "1"
+          exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
 
@@ -181,7 +182,7 @@ jobs:
           severity: "CRITICAL,HIGH"
           format: "sarif"
           output: "trivy-ui-results.sarif"
-          exit-code: "1"
+          exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
 
