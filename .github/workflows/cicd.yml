@@ -154,6 +154,18 @@ jobs:
           test -f ${{ env.API_IMAGE_TAR }}
           test -f ${{ env.UI_IMAGE_TAR }}
 
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Trivy vulnerability DB
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.cache/trivy
+          key: trivy-db-${{ steps.date.outputs.date }}
+          restore-keys: |
+            trivy-db-
+
       - name: Scan API image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
