@@ -156,7 +156,6 @@ jobs:
 
       - name: Scan API image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
-        if: always()
         with:
           input: ${{ env.API_IMAGE_TAR }}
           scanners: "vuln"

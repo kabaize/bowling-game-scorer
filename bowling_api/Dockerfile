@@ -4,7 +4,6 @@ FROM ruby:4.0
 # System dependencies needed for native gems
 RUN apt-get update -qq && apt-get install -y \
   build-essential \
-  libpq-dev \
   libyaml-dev \
   pkg-config \
   curl \
@@ -34,6 +33,19 @@ COPY bowling_core ./bowling_core
 # Re-run bundle install in case copied files changed dependency resolution
 WORKDIR /app/bowling_api
 RUN bundle install
+
+# Containers never boot their own kernel, and native gem extensions are
+# already compiled at this point, so the C toolchain and kernel headers
+# it pulled in (linux-libc-dev) have no further purpose at runtime.
+# Purging them removes a package Trivy flags against kernel CVEs that
+# can't actually apply here (see .github/workflows/cicd.yml history /
+# https://github.com/aquasecurity/trivy/discussions/6562). Note: since
+# this is a single-stage build, this doesn't shrink the image itself
+# (the bytes still exist in the earlier install layer) -- it only
+# removes the packages from the final dpkg state that Trivy scans.
+RUN apt-get purge -y build-essential linux-libc-dev \
+  && apt-get autoremove -y \
+  && apt-get clean
 
 # Run Rails from API folder
 WORKDIR /app/bowling_api
