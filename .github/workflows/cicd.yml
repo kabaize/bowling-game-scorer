@@ -165,6 +165,7 @@ jobs:
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
+          limit-severities-for-sarif: true
 
       - name: Upload API Trivy SARIF artifact
         uses: actions/upload-artifact@v7
@@ -193,6 +194,7 @@ jobs:
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
+          limit-severities-for-sarif: true
 
       - name: Upload UI Trivy SARIF artifact
         uses: actions/upload-artifact@v7
