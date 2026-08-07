@@ -166,6 +166,14 @@ jobs:
           ignore-unfixed: true
           vuln-type: "os,library"
 
+      - name: Upload API Trivy SARIF artifact
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: trivy-api-sarif
+          path: trivy-api-results.sarif
+          retention-days: 7
+
       - name: Upload API Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
         if: always()
@@ -185,6 +193,14 @@ jobs:
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
+
+      - name: Upload UI Trivy SARIF artifact
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: trivy-ui-sarif
+          path: trivy-ui-results.sarif
+          retention-days: 7
 
       - name: Upload UI Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
