@@ -20,9 +20,11 @@ The main workflow is located at:
 
 The workflow runs on:
 
-- Pushes to `main` or `develop`
-- Pull requests targeting `main` or `develop`
+- Pushes to `main` (this is what gates `publish`, so it needs to run on the actual merge commit)
+- Pull requests targeting `main` or `develop` (this is what validates a branch before it's allowed to merge)
 - Manual runs through `workflow_dispatch`
+
+Pushes to `develop` intentionally aren't a separate trigger: since `develop` is protected and requires a pull request to merge, every change landing there was already validated by the `pull_request`-triggered run, and nothing deploys from `develop`, so a second push-triggered run of the same commit would just be a redundant use of CI minutes.
 
 The workflow includes the following jobs:
 
