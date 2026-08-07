@@ -8,7 +8,6 @@ RUN apt-get update -qq && apt-get install -y \
   libyaml-dev \
   pkg-config \
   curl \
-  nodejs \
   && rm -rf /var/lib/apt/lists/*
 
 # Remove Ruby's own bundled default json gemspec: it's stale metadata that
