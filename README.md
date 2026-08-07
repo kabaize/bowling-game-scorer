@@ -45,6 +45,7 @@ The workflow includes the following jobs:
    - Builds the Rails API Docker image.
    - Builds the React/Nginx UI Docker image.
    - Saves both images as tar artifacts for later workflow jobs.
+   - Each image's layers are cached separately via GitHub Actions cache, so a run that doesn't change a Dockerfile or its dependencies reuses prior layers instead of rebuilding from scratch.
 
 4. **Security scan**
    - Downloads the built Docker image artifacts.

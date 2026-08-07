@@ -93,6 +93,8 @@ jobs:
           push: false
           tags: ${{ env.API_IMAGE }}:ci
           load: true
+          cache-from: type=gha,scope=bowling-api
+          cache-to: type=gha,mode=max,scope=bowling-api
 
       - name: Build UI Docker Image
         uses: docker/build-push-action@v7
@@ -102,6 +104,8 @@ jobs:
           push: false
           tags: ${{ env.UI_IMAGE }}:ci
           load: true
+          cache-from: type=gha,scope=bowling-ui
+          cache-to: type=gha,mode=max,scope=bowling-ui
 
       - name: Save Docker images
         run: |
