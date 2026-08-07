@@ -20,9 +20,11 @@ The main workflow is located at:
 
 The workflow runs on:
 
-- Pushes to `main` or `develop`
-- Pull requests targeting `main` or `develop`
+- Pushes to `main` (this is what gates `publish`, so it needs to run on the actual merge commit)
+- Pull requests targeting `main` or `develop` (this is what validates a branch before it's allowed to merge)
 - Manual runs through `workflow_dispatch`
+
+Pushes to `develop` intentionally aren't a separate trigger: since `develop` is protected and requires a pull request to merge, every change landing there was already validated by the `pull_request`-triggered run, and nothing deploys from `develop`, so a second push-triggered run of the same commit would just be a redundant use of CI minutes.
 
 The workflow includes the following jobs:
 
@@ -43,6 +45,7 @@ The workflow includes the following jobs:
    - Builds the Rails API Docker image.
    - Builds the React/Nginx UI Docker image.
    - Saves both images as tar artifacts for later workflow jobs.
+   - Each image's layers are cached separately via GitHub Actions cache, so a run that doesn't change a Dockerfile or its dependencies reuses prior layers instead of rebuilding from scratch.
 
 4. **Security scan**
    - Downloads the built Docker image artifacts.
@@ -87,7 +90,11 @@ This means Trivy scans both:
 - Operating system packages inside the container images
 - Application/library dependencies such as Ruby gems and Node packages
 
-During remediation, an unused `thruster` dependency was removed from the Rails API image. This reduced the runtime image attack surface and eliminated an unnecessary embedded Go binary from the scan results.
+During remediation, an unused `thruster` dependency was removed from the Rails API image. This reduced the runtime image attack surface and eliminated an unnecessary embedded Go binary from the scan results. The Rails API image also no longer installs `nodejs`: the app is API-only (no importmap, jsbundling, or asset pipeline gem depends on a JS runtime), so the package was dead weight that only added its own vendored Node dependencies -- including a vulnerable `brace-expansion` -- to the scan surface.
+
+The Rails API image also purges `build-essential`, `linux-libc-dev`, and `imagemagick` after gems finish compiling. Native gem extensions (e.g. `sqlite3`) need a C toolchain during `bundle install`, but nothing at runtime touches a compiler or kernel headers -- containers share the host kernel and never boot their own. `imagemagick` (and the `libheif` HEIF/AVIF plugins it pulls in) ships preinstalled in the `ruby` base image, unrelated to anything this Dockerfile asks for; the app has no `has_one_attached`/`has_many_attached`, no ActiveStorage migrations, and no `MiniMagick`/`ImageProcessing` call anywhere, so `image_processing` in the Gemfile is unused Rails boilerplate and the library it would depend on was dead weight. `libpq-dev` is also present in the base image independent of this Dockerfile; it's unused (the app is `sqlite3`-only, see `config/database.yml`) but isn't currently purged.
+
+Beyond reducing attack surface, purging `linux-libc-dev` also eliminates a recurring Trivy false-positive class: Linux distro security advisories are tracked against the `linux` source package as a whole, not the individual binary packages built from it, so Trivy has no way to know that `linux-libc-dev` (headers only, no compiled kernel code) doesn't actually contain the vulnerable code path for a given kernel CVE ([aquasecurity/trivy#6562](https://github.com/aquasecurity/trivy/discussions/6562)). Removing packages outright, rather than relying on `.trivyignore` suppressions, keeps the scan meaningful for packages that remain.
 
 The Rails API image currently pins patched versions of `json` and `net-imap` in `Gemfile` and `Gemfile.lock` after Trivy identified older Ruby-provided versions in the container image. Trivy may still report stale/default Ruby gem metadata inherited from the upstream Ruby base image. Trivy findings are always uploaded to the Security tab, but whether they block the pipeline depends on the branch: on `develop`, Trivy is a reporting control only, so feature work can be validated without a scan finding halting the run; on `main`, a `HIGH` or `CRITICAL` finding fails the `security-scan` job and blocks `publish`, since `main` is the only branch that pushes images to GitHub Container Registry. In a professional production setting, I would also route findings into a vulnerability tracking process with defined ownership, remediation timelines, and escalation criteria. For example, findings could be tracked against the application-owning team with a defined remediation window, while deployment blocking could be reserved for actively exploited, internet-exposed, or policy-exception cases.
 

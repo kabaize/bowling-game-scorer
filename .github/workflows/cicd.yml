@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - "main"
-      - "develop"
   pull_request:
     branches:
       - "main"
@@ -94,6 +93,8 @@ jobs:
           push: false
           tags: ${{ env.API_IMAGE }}:ci
           load: true
+          cache-from: type=gha,scope=bowling-api
+          cache-to: type=gha,mode=max,scope=bowling-api
 
       - name: Build UI Docker Image
         uses: docker/build-push-action@v7
@@ -103,6 +104,8 @@ jobs:
           push: false
           tags: ${{ env.UI_IMAGE }}:ci
           load: true
+          cache-from: type=gha,scope=bowling-ui
+          cache-to: type=gha,mode=max,scope=bowling-ui
 
       - name: Save Docker images
         run: |
@@ -162,6 +165,15 @@ jobs:
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
+          limit-severities-for-sarif: true
+
+      - name: Upload API Trivy SARIF artifact
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: trivy-api-sarif
+          path: trivy-api-results.sarif
+          retention-days: 7
 
       - name: Upload API Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
@@ -172,6 +184,7 @@ jobs:
 
       - name: Scan UI image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
+        if: always()
         with:
           input: ${{ env.UI_IMAGE_TAR }}
           scanners: "vuln"
@@ -181,6 +194,15 @@ jobs:
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
           vuln-type: "os,library"
+          limit-severities-for-sarif: true
+
+      - name: Upload UI Trivy SARIF artifact
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: trivy-ui-sarif
+          path: trivy-ui-results.sarif
+          retention-days: 7
 
       - name: Upload UI Trivy SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
